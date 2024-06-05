@@ -12,6 +12,7 @@ public partial class Form1 : Form
 
     readonly Button buttonPing = new();
     readonly Button buttonSend = new();
+    readonly Button buttonClear = new();
     readonly TextBox textBoxStatus = new();
     readonly TextBox textBoxDataRx = new();
     readonly TextBox textBoxPort = new();
@@ -37,10 +38,17 @@ public partial class Form1 : Form
 
         _displayHelp.SetButtons(buttonPing, new Point(10, 60), "PING IP ADDRESS", Color.LightGreen, new EventHandler(SendPing), this);
         _displayHelp.SetButtons(buttonSend, new Point(180, 60), "SEND DATA", Color.LightGreen, new EventHandler(SendData), this);
+        _displayHelp.SetButtons(buttonClear, new Point(350, 60), "CLEAR DATA", Color.LightGreen, new EventHandler(ClearData), this);
+
 
         _displayHelp.SetTextBox(textBoxStatus, new Point(10, 110), 150, "READY", Color.LightYellow, true, this);
         _displayHelp.SetTextBox(textBoxDataRx, new Point(180, 110), 150, "READY", Color.LightYellow, true, this);
 
+    }
+
+    private void ClearData(object sender, EventArgs e)
+    {
+        textBoxDataRx.Text = "READY";
     }
 
     private void SendPing(object sender, EventArgs e) {
@@ -60,10 +68,28 @@ public partial class Form1 : Form
 
         byte[] bytesToSend = ASCIIEncoding.ASCII.GetBytes(data);
 
-        stream.Write(bytesToSend, 0, bytesToSend.Length);
+        try
+        {
+            stream.Write(bytesToSend, 0, bytesToSend.Length);
+        }
+        catch (Exception ex)
+        {
+            textBoxDataRx.Text = ex.Message;
+            return;
+        }
 
         byte[] bytesToRead = new byte[client.ReceiveBufferSize];
-        int bytesRead = stream.Read(bytesToRead, 0, client.ReceiveBufferSize);
+        int bytesRead;
+        try
+        {
+            bytesRead = stream.Read(bytesToRead, 0, client.ReceiveBufferSize);
+        }
+        catch (Exception ex)
+        {
+            textBoxDataRx.Text = ex.Message;
+            return;
+        }
+
         string rxData = Encoding.ASCII.GetString(bytesToRead, 0, bytesRead);
         textBoxDataRx.Text = rxData;
 

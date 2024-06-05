@@ -13,6 +13,7 @@ public partial class Form1 : Form
     readonly Button buttonPing = new();
     readonly Button buttonSend = new();
     readonly TextBox textBoxStatus = new();
+    readonly TextBox textBoxDataRx = new();
     readonly TextBox textBoxPort = new();
     readonly TextBox textBoxIP = new();
 
@@ -36,7 +37,9 @@ public partial class Form1 : Form
 
         _displayHelp.SetButtons(buttonPing, new Point(10, 60), "PING IP ADDRESS", Color.LightGreen, new EventHandler(SendPing), this);
         _displayHelp.SetButtons(buttonSend, new Point(180, 60), "SEND DATA", Color.LightGreen, new EventHandler(SendData), this);
+
         _displayHelp.SetTextBox(textBoxStatus, new Point(10, 110), 150, "READY", Color.LightYellow, true, this);
+        _displayHelp.SetTextBox(textBoxDataRx, new Point(180, 110), 150, "READY", Color.LightYellow, true, this);
 
     }
 
@@ -58,6 +61,11 @@ public partial class Form1 : Form
         byte[] bytesToSend = ASCIIEncoding.ASCII.GetBytes(data);
 
         stream.Write(bytesToSend, 0, bytesToSend.Length);
+
+        byte[] bytesToRead = new byte[client.ReceiveBufferSize];
+        int bytesRead = stream.Read(bytesToRead, 0, client.ReceiveBufferSize);
+        string rxData = Encoding.ASCII.GetString(bytesToRead, 0, bytesRead);
+        textBoxDataRx.Text = rxData;
 
         stream.Close();
         client.Close();

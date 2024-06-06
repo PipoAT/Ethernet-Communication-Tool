@@ -46,55 +46,63 @@ public partial class Form1 : Form
 
     }
 
-    private void ClearData(object sender, EventArgs e)
+    private void ClearData(object? sender, EventArgs e)
     {
         textBoxDataRx.Text = "READY";
     }
 
-    private void SendPing(object sender, EventArgs e) {
+    private void SendPing(object? sender, EventArgs e) {
         string ipAddress = textBoxIP.Text.ToString();
         Ping pingSender = new();
         PingReply reply = pingSender.Send(ipAddress);
         textBoxStatus.Text = reply.Status.ToString();
     }
 
-    private void SendData(object sender, EventArgs e) {
+    private void SendData(object? sender, EventArgs e) {
         string ipAddress = textBoxIP.Text.ToString();
         int port = Convert.ToInt16(textBoxPort.Text);
         string data = "Hello, World!";
 
-        TcpClient client = new TcpClient(ipAddress, port);
-        NetworkStream stream = client.GetStream();
-
-        byte[] bytesToSend = ASCIIEncoding.ASCII.GetBytes(data);
-
-        try
+        try 
         {
-            stream.Write(bytesToSend, 0, bytesToSend.Length);
+            TcpClient client = new TcpClient(ipAddress, port);
+            NetworkStream stream = client.GetStream();
+
+            byte[] bytesToSend = ASCIIEncoding.ASCII.GetBytes(data);
+
+            try
+            {
+                stream.Write(bytesToSend, 0, bytesToSend.Length);
+            }
+            catch (Exception ex)
+            {
+                textBoxDataRx.Text = ex.Message;
+                return;
+            }
+
+            byte[] bytesToRead = new byte[client.ReceiveBufferSize];
+            int bytesRead;
+            try
+            {
+                bytesRead = stream.Read(bytesToRead, 0, client.ReceiveBufferSize);
+            }
+            catch (Exception ex)
+            {
+                textBoxDataRx.Text = ex.Message;
+                return;
+            }
+
+            string rxData = Encoding.ASCII.GetString(bytesToRead, 0, bytesRead);
+            textBoxDataRx.Text = rxData;
+
+            stream.Close();
+            client.Close();
         }
         catch (Exception ex)
         {
             textBoxDataRx.Text = ex.Message;
             return;
         }
-
-        byte[] bytesToRead = new byte[client.ReceiveBufferSize];
-        int bytesRead;
-        try
-        {
-            bytesRead = stream.Read(bytesToRead, 0, client.ReceiveBufferSize);
-        }
-        catch (Exception ex)
-        {
-            textBoxDataRx.Text = ex.Message;
-            return;
-        }
-
-        string rxData = Encoding.ASCII.GetString(bytesToRead, 0, bytesRead);
-        textBoxDataRx.Text = rxData;
-
-        stream.Close();
-        client.Close();
     }
 
 }

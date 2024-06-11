@@ -49,6 +49,7 @@ public partial class Form1 : Form
     private void ClearData(object? sender, EventArgs e)
     {
         textBoxDataRx.Text = "READY";
+        textBoxStatus.Text = "READY";
     }
 
     private void SendPing(object? sender, EventArgs e) {
@@ -65,10 +66,10 @@ public partial class Form1 : Form
 
         try 
         {
-            TcpClient client = new TcpClient(ipAddress, port);
+            TcpClient client = new(ipAddress, port);
             NetworkStream stream = client.GetStream();
 
-            byte[] bytesToSend = ASCIIEncoding.ASCII.GetBytes(data);
+            byte[] bytesToSend = Encoding.ASCII.GetBytes(data);
 
             try
             {
